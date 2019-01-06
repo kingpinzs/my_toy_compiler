@@ -4,12 +4,13 @@ OBJS = parser.o  \
        codegen.o \
        main.o    \
        tokens.o  \
+       corefn.o  \
+	   native.o  \
 
-LLVM_MODULES = core jit native
-
-CPPFLAGS = `llvm-config --cppflags $(LLVM_MODULES)`
-LDFLAGS = `llvm-config --ldflags $(LLVM_MODULES)`
-LIBS = `llvm-config --libs $(LLVM_MODULES)`
+LLVMCONFIG = llvm-config
+CPPFLAGS = `$(LLVMCONFIG) --cppflags` -std=c++11
+LDFLAGS = `$(LLVMCONFIG) --ldflags` -lpthread -ldl -lz -lncurses -rdynamic
+LIBS = `$(LLVMCONFIG) --libs`
 
 clean:
 	$(RM) -rf parser.cpp parser.hpp parser tokens.cpp $(OBJS)
@@ -27,6 +28,7 @@ tokens.cpp: tokens.l parser.hpp
 
 
 parser: $(OBJS)
-	g++ -o $@ $(LDFLAGS) $(OBJS) $(LIBS)
+	g++ -o $@ $(OBJS) $(LIBS) $(LDFLAGS)
 
-
+test: parser example.txt
+	cat example.txt | ./parser
